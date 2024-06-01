@@ -3,8 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { IoMdEye } from "react-icons/io";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -15,16 +13,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import EditComponent from "@/components/units/EditComponent";
-import DeleteComponent from "@/components/units/DeleteComponent";
-import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import axios from "axios";
 import { Button } from "@nextui-org/react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import AxiosInstance from "@/components/hooks/AxiosInstance";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { useAuthHooks } from "@/components/hooks/Authhooks";
 
 const page = () => {
+  const router = useRouter();
+
+  const { user } = useAuthHooks();
+
+  if (!user) {
+    router.push("/login");
+  }
   const schema = z.object({
     title: z.string().min(2, {
       message: "Title must be more than 2 characters",
@@ -32,56 +37,68 @@ const page = () => {
     content: z.string().min(5, {
       message: "Minimum charater is 5",
     }),
-    thumbnail: z
-      .any()
-      .optional()
-      .refine((file) => {
-        return !file || file.size <= 1024 * 1024 * 5;
-      }, "File Size must be less than 3MB"),
-    main_image: z
-      .any()
-      .optional()
-      .refine((file) => {
-        return !file || file.size <= 1024 * 1024 * 5;
-      }, "File Size must be less than 3MB"),
-    images: z.any(),
+    thumbnail: z.any().optional(),
+
+    main_image: z.any().optional(),
+
+    images: z.array(z.instanceof(File)).optional(),
+    description: z
+      .string()
+      .min(6, {
+        message: "Minumum of 6 characters",
+      })
+      .max(100, {
+        message: "Maximum of 100 characters",
+      }),
   });
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
       title: "",
       content: "",
+      description: "",
     },
   });
+
   async function onSubmit(data: z.infer<typeof schema>) {
     console.log(data);
 
-    // const formData = new FormData();
-    // formData.append("title", data.title);
-    // formData.append("content", data.content);
-    // if (data.thumbnail[0]) {
-    //   formData.append("thumbnail", data.thumbnail[0]);
-    // }
-    // if (data.main_image[0]) {
-    //   formData.append("main_image", data.main_image[0]);
-    // }
-    // if (data.images.length) {
-    //   data.images.forEach((image, index) => {
-    //     formData.append(`images[${index}]`, image);
-    //   });
-    // }
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("description", data.description);
+    formData.append("content", data.content);
+    if (data.thumbnail[0]) {
+      formData.append("thumbnail", data.thumbnail[0]);
+    }
+    if (data.main_image[0]) {
+      formData.append("mainImage", data.main_image[0]);
+    }
+    if (data.images && data.images.length > 0) {
+      Array.from(data.images).forEach((file, index) => {
+        formData.append(`images[${index}]`, file);
+      });
+    }
 
-    // try {
-    //   await axios.post("http://127.0.0.1:8000/api/posts", {
-    //     headers: {
-    //       "Content-Type": "multipart/form-data",
-    //     },
-    //   });
-    //   // history.push('/');
-    // } catch (error) {
-    //   console.error("Create post error", error);
-    // }
+    try {
+      const response = await AxiosInstance.post("/blogs", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("post blog", response);
+
+      if (response.status === 200) {
+        toast.success("Blog Created Successfully");
+        router.push("/");
+      } else {
+        toast.error("Wrong Params Sent");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Unable to create blog Post");
+    }
   }
+
   return (
     <div className="   items-center flex flex-col justify-center  p-4">
       <h2 className=" font-bold text-xl text-center ">
@@ -109,15 +126,26 @@ const page = () => {
           />
           <FormField
             control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Input placeholder="" {...field} />
+                </FormControl>
+                <FormDescription>Write the blog description</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="content"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Content</FormLabel>
                 <FormControl>
-                  <ReactQuill
-                    theme="snow"
-                    {...field}
-                  />
+                  <ReactQuill theme="snow" {...field} />
                 </FormControl>
                 <FormDescription>Write the blog content</FormDescription>
                 <FormMessage />
@@ -131,7 +159,13 @@ const page = () => {
               <FormItem>
                 <FormLabel>Image</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="file" {...field} />
+                  <Input
+                    placeholder=""
+                    onChange={(e) =>
+                      field.onChange(Array.from(e.target.files as FileList ?? null  ))
+                    }
+                    type="file"
+                  />
                 </FormControl>
                 <FormDescription>Upload the thumbnail</FormDescription>
                 <FormMessage />
@@ -146,7 +180,13 @@ const page = () => {
               <FormItem>
                 <FormLabel>Main Image</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="file" {...field} />
+                  <Input
+                    placeholder=""
+                    onChange={(e) =>
+                      field.onChange(Array.from(e.target.files as FileList ?? null  ))
+                    }
+                    type="file"
+                  />
                 </FormControl>
                 <FormDescription>Upload the blog main image</FormDescription>
                 <FormMessage />
@@ -160,7 +200,14 @@ const page = () => {
               <FormItem>
                 <FormLabel>Other Images</FormLabel>
                 <FormControl>
-                  <Input placeholder="" type="file" multiple {...field} />
+                  <Input
+                    placeholder=""
+                    onChange={(e) =>
+                      field.onChange(Array.from(e.target.files as FileList ?? null  ))
+                    }
+                    type="file"
+                    multiple
+                  />
                 </FormControl>
                 <FormDescription>
                   You can upload multiples image

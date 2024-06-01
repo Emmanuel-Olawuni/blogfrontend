@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Link from "next/link";
 import {
   Table,
@@ -14,69 +13,110 @@ import {
   TableRow,
   TableCell,
   Button,
+  Spinner,
 } from "@nextui-org/react";
 
 import { IoMdEye } from "react-icons/io";
 
-import EditComponent from "@/components/units/EditComponent";
 import DeleteComponent from "@/components/units/DeleteComponent";
+import AxiosInstance from "@/components/hooks/AxiosInstance";
+import { blogTypes } from "@/lib/type";
+import { CiEdit } from "react-icons/ci";
 export default function Home() {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<blogTypes>();
+  const [loading, isLoading] = useState(true);
+  const tableColumns = [
+    {
+      key: "title",
+      name: "TITLE",
+    },
+    {
+      key: "description",
+      name: "DESCRIPTION",
+    },
+    {
+      key: "thumbnail",
+      name: "THUMBNAIL",
+    },
+    {
+      key: "action",
+      name: "ACTION",
+    },
+  ];
 
   useEffect(() => {
     const fetchPosts = async () => {
-      // const response = await axios.get("http://127.0.0.1:8000/api/posts");
-      // setPosts(response.data);
+      const response = await AxiosInstance.get("/blogs");
+      console.log("blog response", response);
+
+      setPosts(response.data);
+      isLoading(false);
     };
     fetchPosts();
   }, []);
   const { user } = useAuthHooks();
   const router = useRouter();
 
-  // if (!user) {
-  //   router.push("/login");
-  // }
+  if (!user) {
+    router.push("/login");
+  }
   return (
     <main>
       <div className=" flex px-6 py-4  justify-around max-w-md">
         <h1 className=" font-bold text-xl text-gray-800">All Blog Posts</h1>
         <div>
-          <Button href="/create" variant="flat">
+          <Link href="/create" className=" underline underline-offset-4">
             Create New Post
-          </Button>
+          </Link>
         </div>
       </div>
-      <Table isStriped aria-label="Example static collection table">
-        <TableHeader>
-          <TableColumn>TITLE</TableColumn>
-          <TableColumn>DESCRIPTION</TableColumn>
-          <TableColumn>THUMBNAIL</TableColumn>
-          <TableColumn>ACTION</TableColumn>
-        </TableHeader>
-        <TableBody emptyContent={"No blogs to display."}>
-          <TableRow key="1">
-            <TableCell>Tony Reichert</TableCell>
-            <TableCell className=" text-balance text-ellipsis">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quasi
-              sequi minima natus ducimus! Nobis quos optio quibusdam est ea
-              nihil officiis tempora aut magni labore eaque culpa, quia sed
-              minima.
-            </TableCell>
-            <TableCell>
-              <Image src="" alt="Blog Thumbnail" />
-            </TableCell>
-            <TableCell>
-              <div className=" flex gap-2 px-3 ">
-                <Link href="/blog/1" target="_blank">
-                  <IoMdEye className=" text-xl text-primary-600" />{" "}
-                </Link>
-                <EditComponent id={"1"} />
-                <DeleteComponent id={"1"} />
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      {loading ? (
+        <Spinner
+          label="Loading blogs"
+          size="md"
+          color="default"
+          className="text-center flex justify-center items-center"
+        />
+      ) : (
+        <Table isStriped aria-label="Example static collection table">
+          <TableHeader columns={tableColumns}>
+            {(tableColumns) => (
+              <TableColumn key={tableColumns.key}>
+                {tableColumns.name}
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody emptyContent={"No blogs to display."} items={posts}>
+            {(item) => (
+              <TableRow key={item.id}>
+                <TableCell>{item.title}</TableCell>
+                <TableCell className=" text-balance text-ellipsis">
+                  {item.description}
+                </TableCell>
+                <TableCell>
+                  <img
+                    src={`http://127.0.0.1:8000/storage/${item.thumbnail}`}
+                    alt="Blog Thumbnail"
+                    className=" w-[50px] h-[50px] object-contain"
+                   
+                  />
+                </TableCell>
+                <TableCell>
+                  <div className=" flex gap-2 px-3 ">
+                    <Link href={`/blog/${item.id}`} target="_blank">
+                      <IoMdEye className=" text-xl text-primary-600" />{" "}
+                    </Link>
+                    <Link href={`/blog/edit/${item.id}`} target="_blank">
+                      <CiEdit className=" text-xl text-primary-600" />{" "}
+                    </Link>
+                    <DeleteComponent dataID={item.id} />
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
     </main>
   );
 }

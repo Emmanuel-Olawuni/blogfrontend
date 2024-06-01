@@ -22,18 +22,18 @@ export default function NavBar() {
   return (
     <Navbar>
       <NavbarBrand>
-        <p className="font-bold text-inherit">My BLOG</p>
+        <Link href="/" className="font-bold text-inherit">My BLOG</Link>
       </NavbarBrand>
 
       <NavbarContent justify="end">
         {user ? (
-          <NavbarItem>
-            <Button>Hi , {user.name}</Button>
+          <NavbarItem className=" flex gap-3 ">
+            <Button variant="flat">Hi , {user.name}</Button>
             <Button onClick={handleLogout}>LogOut</Button>
           </NavbarItem>
         ) : (
           <>
-            <NavbarItem>
+            <NavbarItem className=" flex gap-3 ">
               <Button as={Link} color="primary" href="/register" variant="flat">
                 Register
               </Button>

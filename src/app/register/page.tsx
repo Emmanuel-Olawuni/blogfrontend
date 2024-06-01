@@ -1,54 +1,43 @@
 // src/components/RegisterForm.js
 "use client";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import axios from "axios";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-// import { useHistory } from 'react-router-dom';
-// import { AuthContext } from "../contexts/AuthContext";
 import { MdTextFields } from "react-icons/md";
 import { MdEmail, MdLock } from "react-icons/md";
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input, Spinner } from "@nextui-org/react";
 import Link from "next/link";
 import { Register } from "@/lib/type";
 import { useAuthHooks } from "@/components/hooks/Authhooks";
-
-const schema = z.object({
-  name: z
-    .string({
-      required_error: "Name field is required.",
-    })
-    .min(2, {
-      message: "Name must be at least 2 characters",
-    }),
-  email: z
-    .string({
-      required_error: "Email field is required.",
-    })
-    .email({
-      message: "Invalid email format",
-    }),
-  password: z
-    .string({
-      required_error: "Password field is required.",
-    })
-    .min(6, {
-      message: "Password must be at least 6 characters",
-    }),
-});
+import { toast } from "react-toastify";
 
 const RegisterForm = () => {
+  const schema = z.object({
+    name: z
+      .string({
+        required_error: "Name field is required.",
+      })
+      .min(2, {
+        message: "Name must be at least 2 characters",
+      }),
+    email: z
+      .string({
+        required_error: "Email field is required.",
+      })
+      .email({
+        message: "Invalid email format",
+      }),
+    password: z
+      .string({
+        required_error: "Password field is required.",
+      })
+      .min(6, {
+        message: "Password must be at least 6 characters",
+      }),
+  });
   const { registerUser } = useAuthHooks();
-  // const history = useHistory();
+  const [loading, isLoading] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
@@ -58,13 +47,13 @@ const RegisterForm = () => {
   });
 
   const onSubmit: SubmitHandler<Register> = async (data) => {
-    console.log(data);
-    
-    await registerUser(data.name, data.email, data.password);
-    console.log(data);
+    isLoading(true);
+
     try {
+      await registerUser(data.name, data.email, data.password);
     } catch (error) {
-      console.error("Registration error", error);
+      toast.error("Unable to Register!. Try again Later.");
+      isLoading(false);
     }
   };
 
@@ -94,7 +83,6 @@ const RegisterForm = () => {
             startContent={
               <MdTextFields className=" pointer-events-none flex-shrink-0 text-2xl" />
             }
-         
             className=" max-w-md"
             aria-invalid={errors.name ? true : false}
           />{" "}
@@ -117,7 +105,9 @@ const RegisterForm = () => {
             aria-invalid={errors.email ? true : false}
           />{" "}
           {errors.email?.type === "required" && (
-            <p role="alert " className="destructive">Email is required.</p>
+            <p role="alert " className="destructive">
+              Email is required.
+            </p>
           )}
           {errors.email?.type === "pattern" && (
             <p role="alert destructive">Invalid email format</p>
@@ -141,13 +131,17 @@ const RegisterForm = () => {
               Password must be at least 6 characters
             </p>
           )}{" "}
-          <Button
-            type="submit"
-            variant="flat"
-            className="flex w-full bg-black max-w-md justify-center rounded-md py-1.5 text-sm leading-6 text-white "
-          >
-            Login
-          </Button>
+          {loading ? (
+            <Spinner label="Please wait ..." size="md" color="default" />
+          ) : (
+            <Button
+              type="submit"
+              variant="flat"
+              className="flex w-full bg-black max-w-md justify-center rounded-md py-1.5 text-sm leading-6 text-white "
+            >
+              Login
+            </Button>
+          )}
         </form>
       </div>
     </div>

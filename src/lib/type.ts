@@ -6,9 +6,17 @@ export interface Register extends Login {
   name: string;
 }
 export type blogTypes = {
-  id: number;
+  id: string;
   title: string;
   description: string;
-  thumbnail : string;
-
+  thumbnail: string;
+}[];
+export interface blogForm {
+  mainImage: string;
+  otherImages: string[];
+  id: string;
+  title: string;
+  content: string;
+  decsription: string;
+  thumbnail: string;
 }

@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         password,
       });
+      
       if (response.data.access_token) {
         toast.success("Registration Successful! Redirecting to Login");
         router.push("/login");

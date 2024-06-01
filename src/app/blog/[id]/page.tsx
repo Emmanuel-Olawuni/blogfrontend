@@ -1,9 +1,11 @@
-import { useParams } from "next/navigation";
+'use client'
+
 import React from "react";
 
-// const { id } = useParams()
 const page = () => {
-  return <div>Single Blog</div>;
+
+
+  return <div>hi </div>;
 };
 
 export default page;

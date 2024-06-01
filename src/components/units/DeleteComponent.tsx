@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { MdDelete } from "react-icons/md";
 import {
@@ -27,45 +28,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-const DeleteComponent = ({ id }: { id: string }) => {
+import AxiosInstance from "../hooks/AxiosInstance";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+const DeleteComponent = ({ dataID }: { dataID: string }) => {
+  const router = useRouter();
+
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const schema = z.object({
-    id: z.string(),
-  });
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      id: id,
-    },
-  });
-  async function onSubmit(data: z.infer<typeof schema>) {
-    console.log(data);
+  async function onSubmit() {
+    try {
+      const response = await AxiosInstance.delete(`/blogs/${dataID}`);
+      console.log("post blog", response);
 
-    // const formData = new FormData();
-    // formData.append("title", data.title);
-    // formData.append("content", data.content);
-    // if (data.thumbnail[0]) {
-    //   formData.append("thumbnail", data.thumbnail[0]);
-    // }
-    // if (data.main_image[0]) {
-    //   formData.append("main_image", data.main_image[0]);
-    // }
-    // if (data.images.length) {
-    //   data.images.forEach((image, index) => {
-    //     formData.append(`images[${index}]`, image);
-    //   });
-    // }
-
-    // try {
-    //   await axios.post("http://127.0.0.1:8000/api/posts", {
-    //     headers: {
-    //       "Content-Type": "multipart/form-data",
-    //     },
-    //   });
-    //   // history.push('/');
-    // } catch (error) {
-    //   console.error("Create post error", error);
-    // }
+      if (response.status === 200) {
+        toast.success("Blog Deleted Successfully");
+        router.push("/");
+      } else {
+        toast.error("unable to delete blog post");
+      }
+    } catch (error) {
+      toast.error("Unable to delete blog Post");
+    }
   }
 
   return (
@@ -77,35 +60,11 @@ const DeleteComponent = ({ id }: { id: string }) => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">
-                Edit Blog Post
-              </ModalHeader>
-              <ModalBody>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className=" space-y-6   gap-3 hidden"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input placeholder="" hidden {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button variant="flat" color="primary" type="submit">
-                      Delete Post
-                    </Button>
-                  </form>
-                </Form>
-              </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
+                <Button color="danger" variant="solid" onPress={onSubmit}>
+                  Delete
+                </Button>
+                <Button color="default" variant="light" onPress={onClose}>
                   Close
                 </Button>
               </ModalFooter>

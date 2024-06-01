@@ -1,10 +1,10 @@
-'use client'
+"use client";
 import React, { useContext, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 // import { AuthContext } from '../contexts/AuthContext';
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input, Spinner } from "@nextui-org/react";
 import { EyeFilledIcon } from "@/components/units/Eyefilled";
 import { EyeSlashFilledIcon } from "@/components/units/Eyeslashed";
 import { MdEmail, MdLock } from "react-icons/md";
@@ -12,9 +12,10 @@ import Link from "next/link";
 import axios from "axios";
 import { Login } from "@/lib/type";
 import { useAuthHooks } from "@/components/hooks/Authhooks";
+import { toast } from "react-toastify";
 
 const LoginForm = () => {
-  const { login} = useAuthHooks()
+  const { login } = useAuthHooks();
   const schema = z.object({
     email: z
       .string({
@@ -39,11 +40,16 @@ const LoginForm = () => {
   } = useForm<Login>({
     resolver: zodResolver(schema),
   });
+  const [loading, isLoading] = useState<boolean>(false);
 
   const onSubmit: SubmitHandler<Login> = async (data) => {
-    await login(data.email, data.password);
-
-    console.log(data);
+    isLoading(true);
+    try {
+      await login(data.email, data.password);
+    } catch (error) {
+      toast.error("Unable to Login!. Try again Later.");
+      isLoading(false);
+    }
   };
   const [isVisible, setIsVisible] = useState(false);
 
@@ -117,13 +123,17 @@ const LoginForm = () => {
               Password must be at least 6 characters
             </p>
           )}{" "}
-          <Button
-            type="submit"
-            variant="flat"
-            className="flex w-full bg-black max-w-md justify-center rounded-md py-1.5 text-sm leading-6 text-white "
-          >
-            Login
-          </Button>
+          {loading ? (
+            <Spinner label="Please wait ..." size="md" color="default" />
+          ) : (
+            <Button
+              type="submit"
+              variant="flat"
+              className="flex w-full bg-black max-w-md justify-center rounded-md py-1.5 text-sm leading-6 text-white "
+            >
+              Login
+            </Button>
+          )}
         </form>
       </div>
     </div>
