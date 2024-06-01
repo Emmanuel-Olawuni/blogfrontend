@@ -1,5 +1,5 @@
 // src/components/RegisterForm.js
-'use client'
+"use client";
 import React, { useContext } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +20,7 @@ import { MdEmail, MdLock } from "react-icons/md";
 import { Button, Input } from "@nextui-org/react";
 import Link from "next/link";
 import { Register } from "@/lib/type";
+import { useAuthHooks } from "@/components/hooks/Authhooks";
 
 const schema = z.object({
   name: z
@@ -46,7 +47,7 @@ const schema = z.object({
 });
 
 const RegisterForm = () => {
-  // const { login } = useContext(AuthContext);
+  const { registerUser } = useAuthHooks();
   // const history = useHistory();
   const {
     register,
@@ -58,10 +59,10 @@ const RegisterForm = () => {
 
   const onSubmit: SubmitHandler<Register> = async (data) => {
     console.log(data);
+    
+    await registerUser(data.name, data.email, data.password);
+    console.log(data);
     try {
-      // await axios.post('http://127.0.0.1:8000/api/register', data);
-      // await login(data.email, data.password);
-      // history.push('/');
     } catch (error) {
       console.error("Registration error", error);
     }
@@ -93,7 +94,7 @@ const RegisterForm = () => {
             startContent={
               <MdTextFields className=" pointer-events-none flex-shrink-0 text-2xl" />
             }
-            type="email"
+         
             className=" max-w-md"
             aria-invalid={errors.name ? true : false}
           />{" "}
@@ -116,7 +117,7 @@ const RegisterForm = () => {
             aria-invalid={errors.email ? true : false}
           />{" "}
           {errors.email?.type === "required" && (
-            <p role="alert destructive">Email is required.</p>
+            <p role="alert " className="destructive">Email is required.</p>
           )}
           {errors.email?.type === "pattern" && (
             <p role="alert destructive">Invalid email format</p>

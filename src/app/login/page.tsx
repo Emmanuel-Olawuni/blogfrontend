@@ -11,8 +11,10 @@ import { MdEmail, MdLock } from "react-icons/md";
 import Link from "next/link";
 import axios from "axios";
 import { Login } from "@/lib/type";
+import { useAuthHooks } from "@/components/hooks/Authhooks";
 
 const LoginForm = () => {
+  const { login} = useAuthHooks()
   const schema = z.object({
     email: z
       .string({
@@ -39,10 +41,8 @@ const LoginForm = () => {
   });
 
   const onSubmit: SubmitHandler<Login> = async (data) => {
-    // const response = await axios.get("http://127.0.0.1:8000/api/blogs");
-    // console.log(response);
+    await login(data.email, data.password);
 
-    // await login(data.email, data.password);
     console.log(data);
   };
   const [isVisible, setIsVisible] = useState(false);
