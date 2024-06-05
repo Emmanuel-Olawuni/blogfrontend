@@ -115,8 +115,8 @@ const page = ({ params }: { params: { id: string } }) => {
         setInitialValue({
           title: response.data.title,
           description: response.data.description,
-          content: response.data.content,
         });
+form.setValue("content" , response.data.content)
         isLoading(false);
       }
     };
@@ -171,7 +171,6 @@ const page = ({ params }: { params: { id: string } }) => {
                   <FormControl>
                     <ReactQuill
                       theme="snow"
-                      defaultValue={initialValue.content}
                       {...field}
                     />
                   </FormControl>
