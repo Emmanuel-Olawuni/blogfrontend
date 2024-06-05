@@ -52,14 +52,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { access_token, user } = response.data;
       localStorage.setItem("access_token", access_token);
       setUser(user);
-      console.log(user);
 
-      toast.success("Login Successful");
+      toast.success("Login Successful. Redirecting to homepage");
       router.push("/");
     } catch (error) {
-      console.log(error);
 
-      toast.error("Login Failed. Please try again.");
+      toast.error("Invalid Credentials. Please try again.");
     }
   };
   const registerUser = async (

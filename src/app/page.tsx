@@ -47,7 +47,7 @@ export default function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       const response = await AxiosInstance.get("/blogs");
-      console.log("blog response", response);
+      console.log("blogss response", response);
 
       setPosts(response.data);
       isLoading(false);
@@ -103,10 +103,10 @@ export default function Home() {
                 </TableCell>
                 <TableCell>
                   <div className=" flex gap-2 px-3 ">
-                    <Link href={`/blog/${item.id}`} target="_blank">
+                    <Link href={`/blog/${item.id}`} >
                       <IoMdEye className=" text-xl text-primary-600" />{" "}
                     </Link>
-                    <Link href={`/blog/edit/${item.id}`} target="_blank">
+                    <Link href={`/blog/edit/${item.id}`} >
                       <CiEdit className=" text-xl text-primary-600" />{" "}
                     </Link>
                     <DeleteComponent dataID={item.id} />

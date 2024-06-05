@@ -20,12 +20,13 @@ import "react-quill/dist/quill.snow.css";
 import AxiosInstance from "@/components/hooks/AxiosInstance";
 import { blogForm } from "@/lib/type";
 import { useAuthHooks } from "@/components/hooks/Authhooks";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
 const page = ({ params }: { params: { id: string } }) => {
   const { user } = useAuthHooks();
   const router = useRouter();
+  const [creating, isCreate] = useState<boolean>(false);
 
   if (!user) {
     router.push("/login");
@@ -37,11 +38,11 @@ const page = ({ params }: { params: { id: string } }) => {
     content: z.string().min(5, {
       message: "Minimum charater is 5",
     }),
-    thumbnail: z.instanceof(File).optional(),
+    thumbnail: z.any(),
 
-    main_image: z.instanceof(File).optional(),
+    main_image: z.any(),
 
-    images: z.array(z.instanceof(File)).optional(),
+    images: z.array(z.instanceof(File)),
     description: z
       .string()
       .min(6, {
@@ -53,38 +54,20 @@ const page = ({ params }: { params: { id: string } }) => {
   });
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      title: "",
-      content: "",
-      description: "",
-    },
+   
   });
 
-  const [loading, isLoading] = useState<boolean>(true);
-  const [blog, setBlog] = useState<blogForm>();
-  useEffect(() => {
-    const fetchPost = async () => {
-      const response = await AxiosInstance.get(`/blogs/${params.id}`);
-      console.log("blog response", response);
-
-      setBlog(response.data);
-      isLoading(false);
-    };
-    fetchPost();
-  }, []);
   async function onSubmit(data: z.infer<typeof schema>) {
-    console.log(data);
-
+    isCreate(true);
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("description", data.description);
-
     formData.append("content", data.content);
-    if (data.thumbnail) {
-      formData.append("thumbnail", data.thumbnail);
+    if (data.thumbnail[0]) {
+      formData.append("thumbnail", data.thumbnail[0]);
     }
-    if (data.main_image) {
-      formData.append("mainImage", data.main_image);
+    if (data.main_image[0]) {
+      formData.append("mainImage", data.main_image[0]);
     }
     if (data.images && data.images.length > 0) {
       Array.from(data.images).forEach((file, index) => {
@@ -105,15 +88,33 @@ const page = ({ params }: { params: { id: string } }) => {
       console.log("post blog", response);
 
       if (response.status === 200) {
-        toast.success("Blog Edited Successfully");
+        toast.success("Blog Created Successfully");
+        isCreate(false);
         router.push("/");
       } else {
+        isCreate(false);
         toast.error("Wrong Params Sent");
       }
     } catch (error) {
+      isCreate(false);
       toast.error("Unable to edit blog Post");
     }
   }
+
+  const [loading, isLoading] = useState<boolean>(true);
+  useEffect(() => {
+    const fetchPost = async () => {
+      const response = await AxiosInstance.get(`/blogs/${params.id}`);
+      console.log("get post", response);
+      if (response) {
+        form.setValue("title", response.data.title);
+        form.setValue("description", response.data.description);
+        form.setValue("content", response.data.content);
+        isLoading(false);
+      }
+    };
+    fetchPost();
+  }, [params.id]);
 
   return (
     <div className="   items-center flex flex-col justify-center  p-4">
@@ -133,7 +134,7 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder={blog?.title} {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormDescription>Write the blog title</FormDescription>
                   <FormMessage />
@@ -147,7 +148,7 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder={blog?.decsription} {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormDescription>Write the blog title</FormDescription>
                   <FormMessage />
@@ -161,11 +162,7 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <ReactQuill
-                      theme="snow"
-                      placeholder={blog?.content}
-                      {...field}
-                    />
+                    <ReactQuill theme="snow" {...field} />
                   </FormControl>
                   <FormDescription>Write the blog content</FormDescription>
                   <FormMessage />
@@ -182,13 +179,15 @@ const page = ({ params }: { params: { id: string } }) => {
                     <Input
                       placeholder=""
                       onChange={(e) =>
-                        field.onChange(Array.from(e.target.files as FileList))
+                        field.onChange(
+                          Array.from((e.target.files as FileList) ?? null)
+                        )
                       }
                       type="file"
                     />
                   </FormControl>
                   <FormDescription>
-                    Previous Thumbnail: {blog?.thumbnail}
+                     Required
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -202,15 +201,18 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Main Image</FormLabel>
                   <FormControl>
-                  <Input
+                    <Input
                       placeholder=""
                       onChange={(e) =>
-                        field.onChange(Array.from(e.target.files as FileList))
+                        field.onChange(
+                          Array.from((e.target.files as FileList) ?? null)
+                        )
                       }
                       type="file"
-                    />                  </FormControl>
+                    />
+                  </FormControl>
                   <FormDescription>
-                    Previous Image: {blog?.mainImage}
+                     Required 
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -223,27 +225,35 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Other Images</FormLabel>
                   <FormControl>
-                  <Input
+                    <Input
                       placeholder=""
                       onChange={(e) =>
-                        field.onChange(Array.from(e.target.files as FileList))
+                        field.onChange(
+                          Array.from((e.target.files as FileList) ?? null)
+                        )
                       }
                       type="file"
-                    />                  </FormControl>
-                  {blog?.otherImages.map((x, i) => (
-                    <FormDescription key={i}>
-                      Previous Images: {x}
-                    </FormDescription>
-                  ))}
+                      multiple
+                    />
+                  </FormControl>
+                  <FormDescription>Required</FormDescription>
 
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button variant="flat" type="submit">
-              Create Post
-            </Button>
+            {creating ? (
+              <Spinner label="Editing Blog...." size="md" />
+            ) : (
+              <Button
+                variant="solid"
+                className=" bg-primary text-white"
+                type="submit"
+              >
+                Edit Post
+              </Button>
+            )}
           </form>
         </Form>
       )}

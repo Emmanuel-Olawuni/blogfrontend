@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { MdDelete } from "react-icons/md";
 import {
   Modal,
@@ -9,40 +9,26 @@ import {
   ModalFooter,
   useDisclosure,
   Button,
+  Spinner,
 } from "@nextui-org/react";
-import Skeleton from "react-loading-skeleton";
-import Link from "next/link";
-import { Textarea } from "@nextui-org/react";
-import { Input } from "@/components/ui/input";
 
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { IoMdEye } from "react-icons/io";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import AxiosInstance from "../hooks/AxiosInstance";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 const DeleteComponent = ({ dataID }: { dataID: string }) => {
   const router = useRouter();
+  const [loading, isLoading] = useState<boolean>(false);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   async function onSubmit() {
+    isLoading(true)
     try {
       const response = await AxiosInstance.delete(`/blogs/${dataID}`);
-      console.log("post blog", response);
 
       if (response.status === 200) {
         toast.success("Blog Deleted Successfully");
-        router.push("/");
+        isLoading(false)
+        router.push("/create");
       } else {
         toast.error("unable to delete blog post");
       }
@@ -61,12 +47,18 @@ const DeleteComponent = ({ dataID }: { dataID: string }) => {
           {(onClose) => (
             <>
               <ModalFooter>
-                <Button color="danger" variant="solid" onPress={onSubmit}>
-                  Delete
-                </Button>
-                <Button color="default" variant="light" onPress={onClose}>
-                  Close
-                </Button>
+                {loading ? (
+                  <Spinner label="Deleting ..." />
+                ) : (
+                  <>
+                    <Button color="danger" variant="solid" onPress={onSubmit}>
+                      Delete
+                    </Button>
+                    <Button color="default" variant="light" onPress={onClose}>
+                      Close
+                    </Button>
+                  </>
+                )}
               </ModalFooter>
             </>
           )}

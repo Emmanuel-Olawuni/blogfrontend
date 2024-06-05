@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { Button } from "@nextui-org/react";
+import { Button, Spinner } from "@nextui-org/react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import AxiosInstance from "@/components/hooks/AxiosInstance";
@@ -24,7 +24,7 @@ import { useAuthHooks } from "@/components/hooks/Authhooks";
 
 const page = () => {
   const router = useRouter();
-
+  const [loading, isLoading] = useState<boolean>(false);
   const { user } = useAuthHooks();
 
   if (!user) {
@@ -61,8 +61,7 @@ const page = () => {
   });
 
   async function onSubmit(data: z.infer<typeof schema>) {
-    console.log(data);
-
+    isLoading(true);
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("description", data.description);
@@ -85,16 +84,17 @@ const page = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("post blog", response);
 
       if (response.status === 200) {
         toast.success("Blog Created Successfully");
+        isLoading(false);
         router.push("/");
       } else {
+        isLoading(false);
         toast.error("Wrong Params Sent");
       }
     } catch (error) {
-      console.log(error);
+      isLoading(false);
       toast.error("Unable to create blog Post");
     }
   }
@@ -162,7 +162,9 @@ const page = () => {
                   <Input
                     placeholder=""
                     onChange={(e) =>
-                      field.onChange(Array.from(e.target.files as FileList ?? null  ))
+                      field.onChange(
+                        Array.from((e.target.files as FileList) ?? null)
+                      )
                     }
                     type="file"
                   />
@@ -183,7 +185,9 @@ const page = () => {
                   <Input
                     placeholder=""
                     onChange={(e) =>
-                      field.onChange(Array.from(e.target.files as FileList ?? null  ))
+                      field.onChange(
+                        Array.from((e.target.files as FileList) ?? null)
+                      )
                     }
                     type="file"
                   />
@@ -203,7 +207,9 @@ const page = () => {
                   <Input
                     placeholder=""
                     onChange={(e) =>
-                      field.onChange(Array.from(e.target.files as FileList ?? null  ))
+                      field.onChange(
+                        Array.from((e.target.files as FileList) ?? null)
+                      )
                     }
                     type="file"
                     multiple
@@ -217,9 +223,13 @@ const page = () => {
             )}
           />
 
-          <Button variant="flat" type="submit">
-            Create Post
-          </Button>
+          {loading ? (
+            <Spinner label="Creating Blog...." size="md"/>
+          ) : (
+            <Button variant="solid" className=" bg-primary text-white"  type="submit">
+              Create Post
+            </Button>
+          )}
         </form>
       </Form>
     </div>
