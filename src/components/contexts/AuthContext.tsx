@@ -33,7 +33,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const decode = jwtDecode<User>(token);
         setUser(decode);
-        console.log("user decode", decode);
       } catch (error) {
         localStorage.removeItem("access_token");
       }
@@ -47,7 +46,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         password,
       });
-      console.log("login response", response);
 
       const { access_token, user } = response.data;
       localStorage.setItem("access_token", access_token);
