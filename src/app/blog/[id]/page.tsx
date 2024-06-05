@@ -3,6 +3,9 @@ import React, { FC, useEffect, useState } from "react";
 import AxiosInstance from "@/components/hooks/AxiosInstance";
 import { Spinner } from "@nextui-org/react";
 import { toast } from "react-toastify";
+import { useAuthHooks } from "@/components/hooks/Authhooks";
+import { useRouter } from "next/navigation";
+
 
 interface BlogData {
   content: string;
@@ -12,6 +15,15 @@ interface BlogData {
 }
 
 const BlogPage = ({ params }: { params: { id: string } }) => {
+
+
+const { user } = useAuthHooks();
+  const router = useRouter();
+  const [creating, isCreate] = useState<boolean>(false);
+
+  if (!user) {
+    router.push("/login");
+  }
   const [loading, isLoading] = useState<boolean>(true);
   const [post, setPost] = useState<BlogData>();
   useEffect(() => {
