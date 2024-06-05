@@ -19,7 +19,6 @@ const BlogPage = ({ params }: { params: { id: string } }) => {
 
 const { user } = useAuthHooks();
   const router = useRouter();
-  const [creating, isCreate] = useState<boolean>(false);
 
   if (!user) {
     router.push("/login");
