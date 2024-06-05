@@ -106,7 +106,6 @@ const page = ({ params }: { params: { id: string } }) => {
   const [initialValue, setInitialValue] = useState({
     title: "",
     description: "",
-    content: "",
   });
   useEffect(() => {
     const fetchPost = async () => {
