@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import axios from "axios";
-import { JwtPayload, jwtDecode } from "jwt-decode";
+import {  jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
 import AxiosInstance from "../hooks/AxiosInstance";
 import { toast } from "react-toastify";

@@ -1,4 +1,3 @@
-// src/components/RegisterForm.js
 "use client";
 import React, { useContext, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";

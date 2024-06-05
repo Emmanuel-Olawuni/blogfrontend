@@ -31,6 +31,7 @@ const page = ({ params }: { params: { id: string } }) => {
   if (!user) {
     router.push("/login");
   }
+
   const schema = z.object({
     title: z.string().min(2, {
       message: "Title must be more than 2 characters",
@@ -39,9 +40,7 @@ const page = ({ params }: { params: { id: string } }) => {
       message: "Minimum charater is 5",
     }),
     thumbnail: z.any(),
-
     main_image: z.any(),
-
     images: z.array(z.instanceof(File)),
     description: z
       .string()
@@ -52,14 +51,16 @@ const page = ({ params }: { params: { id: string } }) => {
         message: "Maximum of 100 characters",
       }),
   });
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-   
   });
 
   async function onSubmit(data: z.infer<typeof schema>) {
     isCreate(true);
+    console.log(data);
     const formData = new FormData();
+
     formData.append("title", data.title);
     formData.append("description", data.description);
     formData.append("content", data.content);
@@ -102,14 +103,20 @@ const page = ({ params }: { params: { id: string } }) => {
   }
 
   const [loading, isLoading] = useState<boolean>(true);
+  const [initialValue, setInitialValue] = useState({
+    title: "",
+    description: "",
+    content: "",
+  });
   useEffect(() => {
     const fetchPost = async () => {
       const response = await AxiosInstance.get(`/blogs/${params.id}`);
-      console.log("get post", response);
       if (response) {
-        form.setValue("title", response.data.title);
-        form.setValue("description", response.data.description);
-        form.setValue("content", response.data.content);
+        setInitialValue({
+          title: response.data.title,
+          description: response.data.description,
+          content: response.data.content,
+        });
         isLoading(false);
       }
     };
@@ -117,15 +124,15 @@ const page = ({ params }: { params: { id: string } }) => {
   }, [params.id]);
 
   return (
-    <div className="   items-center flex flex-col justify-center  p-4">
-      <h2 className=" font-bold text-xl text-center "> Edit Blog Post</h2>
+    <div className="items-center flex flex-col justify-center p-4">
+      <h2 className="font-bold text-xl text-center">Edit Blog Post</h2>
       {loading ? (
         <Spinner label="Please wait ..." size="md" color="default" />
       ) : (
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className=" space-y-6 flex flex-col  gap-3"
+            className="space-y-6 flex flex-col gap-3"
           >
             <FormField
               control={form.control}
@@ -134,7 +141,7 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder={initialValue.title} />
                   </FormControl>
                   <FormDescription>Write the blog title</FormDescription>
                   <FormMessage />
@@ -148,9 +155,9 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder={initialValue.description} />
                   </FormControl>
-                  <FormDescription>Write the blog title</FormDescription>
+                  <FormDescription>Write the blog description</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -162,7 +169,11 @@ const page = ({ params }: { params: { id: string } }) => {
                 <FormItem>
                   <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <ReactQuill theme="snow" {...field} />
+                    <ReactQuill
+                      theme="snow"
+                      defaultValue={initialValue.content}
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>Write the blog content</FormDescription>
                   <FormMessage />
@@ -186,14 +197,11 @@ const page = ({ params }: { params: { id: string } }) => {
                       type="file"
                     />
                   </FormControl>
-                  <FormDescription>
-                     Required
-                  </FormDescription>
+                  <FormDescription>Required</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="main_image"
@@ -211,9 +219,7 @@ const page = ({ params }: { params: { id: string } }) => {
                       type="file"
                     />
                   </FormControl>
-                  <FormDescription>
-                     Required 
-                  </FormDescription>
+                  <FormDescription>Required</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -237,18 +243,16 @@ const page = ({ params }: { params: { id: string } }) => {
                     />
                   </FormControl>
                   <FormDescription>Required</FormDescription>
-
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             {creating ? (
               <Spinner label="Editing Blog...." size="md" />
             ) : (
               <Button
                 variant="solid"
-                className=" bg-primary text-white"
+                className="bg-primary text-white"
                 type="submit"
               >
                 Edit Post

@@ -9,7 +9,6 @@ import { EyeFilledIcon } from "@/components/units/Eyefilled";
 import { EyeSlashFilledIcon } from "@/components/units/Eyeslashed";
 import { MdEmail, MdLock } from "react-icons/md";
 import Link from "next/link";
-import axios from "axios";
 import { Login } from "@/lib/type";
 import { useAuthHooks } from "@/components/hooks/Authhooks";
 import { toast } from "react-toastify";
@@ -32,7 +31,6 @@ const LoginForm = () => {
         message: "Password must be at least 6 characters",
       }),
   });
-  // const { login } = useContext(AuthContext);
   const {
     register,
     handleSubmit,

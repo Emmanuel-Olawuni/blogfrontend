@@ -4,8 +4,7 @@ import { MdDelete } from "react-icons/md";
 import {
   Modal,
   ModalContent,
-  ModalHeader,
-  ModalBody,
+
   ModalFooter,
   useDisclosure,
   Button,

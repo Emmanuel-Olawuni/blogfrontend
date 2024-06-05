@@ -1,6 +1,5 @@
 "use client";
 import React, { FC, useEffect, useState } from "react";
-import DOMPurify from "dompurify";
 import AxiosInstance from "@/components/hooks/AxiosInstance";
 import { Spinner } from "@nextui-org/react";
 import { toast } from "react-toastify";
@@ -43,7 +42,7 @@ const BlogPage = ({ params }: { params: { id: string } }) => {
             src={`http://127.0.0.1:8000/storage/${post?.mainImage}`}
           />
           <BlogContent blogContent={post?.content} />
-          {/* {post?.images.map((x, i) => (
+          {post?.images.map((x, i) => (
             <div className=" flex flex-col px-3 py-4 gap-3">
               <img
                 key={i}
@@ -51,7 +50,7 @@ const BlogPage = ({ params }: { params: { id: string } }) => {
                 className=" h-[200px] w-[200px] object-contain"
               />
             </div>
-          ))} */}
+          ))}
         </>
       )}
     </div>

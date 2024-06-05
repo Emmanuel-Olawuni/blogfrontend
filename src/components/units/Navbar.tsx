@@ -1,15 +1,14 @@
 "use client";
-// import { useRouter } from "next/router";
-// import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Navbar,
   NavbarBrand,
   NavbarContent,
   NavbarItem,
-  Link,
+ 
   Button,
 } from "@nextui-org/react";
+import Link from 'next/link'
 import { useAuthHooks } from "../hooks/Authhooks";
 
 export default function NavBar() {

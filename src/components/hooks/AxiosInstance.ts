@@ -1,6 +1,4 @@
 import axios, { AxiosError } from "axios";
-import { error } from "console";
-import React from "react";
 import { toast } from "react-toastify";
 
 

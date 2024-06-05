@@ -1,8 +1,6 @@
 "use client";
 import { useAuthHooks } from "@/components/hooks/Authhooks";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -15,9 +13,7 @@ import {
   Button,
   Spinner,
 } from "@nextui-org/react";
-
 import { IoMdEye } from "react-icons/io";
-
 import DeleteComponent from "@/components/units/DeleteComponent";
 import AxiosInstance from "@/components/hooks/AxiosInstance";
 import { blogTypes } from "@/lib/type";
@@ -47,7 +43,6 @@ export default function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       const response = await AxiosInstance.get("/blogs");
-      console.log("blogss response", response);
 
       setPosts(response.data);
       isLoading(false);
@@ -95,7 +90,7 @@ export default function Home() {
                 </TableCell>
                 <TableCell>
                   <img
-                    src={`http://127.0.0.1:8000/storage/${item.thumbnail}`}
+                    src={`http://127.0.0.1:8000/storage/app/${item.thumbnail}`}
                     alt="Blog Thumbnail"
                     className=" w-[50px] h-[50px] object-contain"
                    
